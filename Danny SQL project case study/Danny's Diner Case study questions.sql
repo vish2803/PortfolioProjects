@@ -115,3 +115,43 @@ on sales.product_id = menu.product_id
 select customer_id, SUM(points_CTE.points) as total_points from points_CTE
 group by customer_id
 
+-------------------------------------------------------------------------------------------------------------------------------
+-- Bonus questions
+-- Join all the things to produce given output
+select sales.customer_id, order_date,product_name,price, 
+case 
+	when order_date < join_date then 'N'
+	when order_date >= join_date then 'Y'
+	else'N'
+end AS Member	
+from sales
+left join menu
+on sales.product_id = menu.product_id
+left join members
+on sales.customer_id = members.customer_id
+
+
+-- Rank all the things to produce given output
+with summary_CTE as 
+(
+select sales.customer_id, order_date,product_name,price, 
+case 
+	when order_date < join_date then 'N'
+	when order_date >= join_date then 'Y'
+	else'N'
+end AS Member
+from sales
+left join menu
+on sales.product_id = menu.product_id
+left join members
+on sales.customer_id = members.customer_id
+)
+
+select *,
+case 
+	when Member = 'N' then null
+	else
+RANK() over (partition by customer_id,member  order by order_date) 
+end 
+AS Ranking
+from summary_CTE
